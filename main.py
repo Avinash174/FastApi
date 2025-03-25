@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException
-# from pydantic import BaseModel
+from pydantic import BaseModel
 
 app = FastAPI()
 
 # Define an empty list to store items
 items = []
 
-# Pydantic model for request body
-class Item():
+# ✅ Pydantic model for request body
+class Item(BaseModel):
     name: str
 
 @app.get("/")
@@ -20,8 +20,15 @@ def create_item(item: Item):
     return {"message": "Item added", "items": items}
 
 @app.get("/items/{item_id}")
+def get_item(item_id:int)->str:
+    if item_id<len(items):
+        return items[item_id]
+    else: 
+        raise HTTPException(status_code= 404,detail=f"Item {item_id} not found")
+
+@app.get("/items/{item_id}")
 def get_item(item_id: int):
-    if item_id < 0 or item_id >= len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-    
-    return {"item": items[item_id]}
+    if 0 <= item_id < len(items):  # ✅ Prevents negative index errors
+        return {"item": items[item_id]}
+    else:
+        raise HTTPException(status_code=404, detail=f"Item {item_id} not found")  # ✅ Fixed spelling
